@@ -1,0 +1,63 @@
+{
+    "name": "phpsoftbox/test-utils",
+    "description": "Testing utilities for the PhpSoftBox framework",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Anton K.",
+            "email": "inspector-who@mail.ru"
+        }
+    ],
+    "config": {
+        "sort-packages": true
+    },
+    "require": {
+        "php": "^8.5",
+        "phpsoftbox/application": "dev-master",
+        "phpsoftbox/clock": "dev-master",
+        "phpsoftbox/config": "dev-master",
+        "phpsoftbox/http-message": "dev-master",
+        "psr/http-client": "^1.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.93",
+        "phpsoftbox/auth": "dev-master",
+        "phpsoftbox/cli-app": "dev-master",
+        "phpsoftbox/cs-fixer": "^1.1.0",
+        "phpsoftbox/database": "dev-master",
+        "phpsoftbox/orm": "dev-master",
+        "phpsoftbox/session": "dev-master",
+        "phpunit/phpunit": "^11.2"
+    },
+    "suggest": {
+        "phpsoftbox/auth": "Required for WebTestCase auth helpers: actingAs(), withRole() and guard login integration.",
+        "phpsoftbox/database": "Required for database reloader and transaction helpers.",
+        "phpsoftbox/orm": "Required for ORM entity helpers and ORM fixture relations.",
+        "phpsoftbox/session": "Required for WebTestCase and TestHttpClient session/CSRF helpers."
+    },
+    "autoload": {
+        "psr-4": {
+            "PhpSoftBox\\TestUtils\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PhpSoftBox\\TestUtils\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "psb": {
+            "providers": [
+                "PhpSoftBox\\TestUtils\\Cli\\TestUtilsCommandProvider"
+            ]
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "cs:fix": "vendor/bin/psb-cs-fixer fix",
+        "cs:check": "vendor/bin/psb-cs-fixer check --diff"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
