@@ -46,11 +46,20 @@ $config = SnapshotConfig::forTestClass(
 )->withExcludedKeys(['meta.timestamp']);
 
 (new JsonSnapshotAssert())->assertMatchesSnapshot(
-    actual: $payload,
+    payload: $payload,
     snapshotName: 'users-index',
     config: $config,
 );
 ```
+
+Поведение задается флагами `SnapshotConfig` (оба по умолчанию `true`):
+
+- `withAutoCreate(bool)` — snapshot не найден: при `true` файл создается, тест помечается пропущенным
+  (`A new snapshot was created.`); при `false` тест падает с `Snapshot '<имя>' not found.`, файл не создается;
+- `withAutoUpdateOnMismatch(bool)` — snapshot не совпал: тест падает всегда; при `true` файл перезаписывается
+  актуальным payload и сообщение дополняется `Snapshot was updated.`, при `false` файл не меняется.
+
+В CI отключайте оба флага, чтобы отсутствующий или устаревший snapshot не подменялся молча.
 
 ## Практика
 

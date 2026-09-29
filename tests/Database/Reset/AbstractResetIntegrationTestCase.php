@@ -23,7 +23,7 @@ use function sys_get_temp_dir;
 use function uniqid;
 
 /**
- * Проверки reset на настоящей БД из сервисов docker-compose (`make select-testutils` поднимает mariadb и postgres).
+ * Проверки reset на настоящей БД из сервисов docker-compose (`make select-testutils` поднимает mariadb и postgres, MySQL — профиль mysql).
  *
  * DSN основной БД можно переопределить переменной окружения. Основная БД не нужна: дамп пишется во временный
  * каталог, а тестовая БД `<основная>_autotests` создаётся самой стратегией.
@@ -98,11 +98,11 @@ abstract class AbstractResetIntegrationTestCase extends TestCase
     #[Test]
     public function cleansRelatedTablesAndRestoresCountersFromDump(): void
     {
-        $this->reset();
+        $this->resetDatabase();
         $baseline = $this->counters($this->pdo());
 
         $this->insertRelatedRows($this->pdo());
-        $this->reset();
+        $this->resetDatabase();
 
         $pdo = $this->pdo();
         self::assertSame(0, $this->rowCount($pdo));
@@ -117,11 +117,11 @@ abstract class AbstractResetIntegrationTestCase extends TestCase
     #[Test]
     public function restoresCounterAfterInsertAndDelete(): void
     {
-        $this->reset();
+        $this->resetDatabase();
         $baseline = $this->counters($this->pdo());
 
         $this->insertAndDeleteRow($this->pdo());
-        $this->reset();
+        $this->resetDatabase();
 
         self::assertSame($baseline, $this->counters($this->pdo()));
     }
@@ -134,7 +134,7 @@ abstract class AbstractResetIntegrationTestCase extends TestCase
     #[Test]
     public function doesNotReloadUnchangedDumpInNewProcess(): void
     {
-        $this->reset();
+        $this->resetDatabase();
         $this->insertRelatedRows($this->pdo());
 
         // Новый процесс: реестр пуст, а дамп сгенерирован заново — отличаются только комментарии.
@@ -142,7 +142,7 @@ abstract class AbstractResetIntegrationTestCase extends TestCase
         file_put_contents($this->dumpFile, "-- regenerated\n" . $this->schemaDump());
         $this->runner = new RecordingCommandRunner();
 
-        $this->reset();
+        $this->resetDatabase();
 
         self::assertSame(0, $this->runner->schemaLoads($this->dumpFile));
         self::assertSame(0, $this->rowCount($this->pdo()));
@@ -156,13 +156,13 @@ abstract class AbstractResetIntegrationTestCase extends TestCase
     #[Test]
     public function reloadsSchemaWhenDumpChanges(): void
     {
-        $this->reset();
+        $this->resetDatabase();
 
         ResetStateRegistry::clear();
         file_put_contents($this->dumpFile, $this->schemaDump() . "CREATE TABLE extra_table (id INT PRIMARY KEY);\n");
         $this->runner = new RecordingCommandRunner();
 
-        $this->reset();
+        $this->resetDatabase();
 
         self::assertSame(1, $this->runner->schemaLoads($this->dumpFile));
     }
@@ -175,12 +175,12 @@ abstract class AbstractResetIntegrationTestCase extends TestCase
     #[Test]
     public function dumpModeBetweenResetKeepsBaseline(): void
     {
-        $this->reset();
+        $this->resetDatabase();
         $baseline = $this->counters($this->pdo());
 
         $this->reloader('dump')->reloadAll();
         $this->insertRelatedRows($this->pdo());
-        $this->reset();
+        $this->resetDatabase();
 
         $pdo = $this->pdo();
         self::assertSame(0, $this->rowCount($pdo));
@@ -195,13 +195,13 @@ abstract class AbstractResetIntegrationTestCase extends TestCase
     #[Test]
     public function openForeignTransactionDoesNotBlockReset(): void
     {
-        $this->reset();
+        $this->resetDatabase();
 
         $foreign = $this->pdo();
         $foreign->beginTransaction();
         $this->insertRelatedRows($foreign);
 
-        $this->reset();
+        $this->resetDatabase();
 
         self::assertSame(0, $this->rowCount($this->pdo()));
     }
@@ -244,7 +244,7 @@ abstract class AbstractResetIntegrationTestCase extends TestCase
         ]);
     }
 
-    private function reset(): void
+    protected function resetDatabase(): void
     {
         $this->reloader('reset')->reloadAll();
     }

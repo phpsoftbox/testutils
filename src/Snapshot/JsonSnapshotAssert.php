@@ -34,23 +34,25 @@ final readonly class JsonSnapshotAssert
         $path = $this->pathResolver->resolve($config, $snapshotName);
 
         if (!$this->store->exists($path)) {
-            $this->store->write($path, $actual . "\n");
-
-            if ($config->autoCreate()) {
-                Assert::markTestSkipped("Snapshot '{$snapshotName}' not found. A new snapshot was created.");
+            if (!$config->autoCreate()) {
+                Assert::fail("Snapshot '{$snapshotName}' not found.");
             }
 
-            Assert::fail("Snapshot '{$snapshotName}' not found.");
+            $this->store->write($path, $actual . "\n");
+
+            Assert::markTestSkipped("Snapshot '{$snapshotName}' not found. A new snapshot was created.");
         }
 
         $expected = $this->store->read($path);
 
         if (trim($expected) !== trim($actual)) {
+            $message = "Snapshot '{$snapshotName}' does not match.";
+
             if ($config->autoUpdateOnMismatch()) {
                 $this->store->write($path, $actual . "\n");
+                $message .= ' Snapshot was updated.';
             }
 
-            $message           = "Snapshot '{$snapshotName}' does not match. Snapshot was updated.";
             $comparisonFailure = new ComparisonFailure(
                 $expected,
                 $actual,

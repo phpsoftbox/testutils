@@ -48,15 +48,25 @@ final class ResetReloadStrategyPostgresIntegrationTest extends AbstractResetInte
 
     protected function insertRelatedRows(PDO $pdo): void
     {
-        $pdo->exec('
-            INSERT INTO public.parents DEFAULT VALUES
-        ');
-        $pdo->exec('
-            INSERT INTO billing.children (parent_id) SELECT id FROM public.parents
-        ');
-        $pdo->exec("
-            INSERT INTO public.tags (code) VALUES ('a')
-        ");
+        $pdo->exec(
+            '
+                INSERT INTO public.parents DEFAULT
+                VALUES
+            ',
+        );
+        $pdo->exec(
+            '
+                INSERT INTO billing.children (parent_id)
+                SELECT id
+                FROM public.parents
+            ',
+        );
+        $pdo->exec(
+            '
+                INSERT INTO public.tags (code)
+                VALUES (\'a\')
+            ',
+        );
         $pdo->query("
             SELECT nextval('public.standalone_seq')
         ");
@@ -64,21 +74,28 @@ final class ResetReloadStrategyPostgresIntegrationTest extends AbstractResetInte
 
     protected function insertAndDeleteRow(PDO $pdo): void
     {
-        $pdo->exec('
-            INSERT INTO public.parents DEFAULT VALUES
-        ');
-        $pdo->exec('
-            DELETE FROM public.parents
-        ');
+        $pdo->exec(
+            '
+                INSERT INTO public.parents DEFAULT
+                VALUES
+            ',
+        );
+        $pdo->exec(
+            '
+                DELETE FROM public.parents
+            ',
+        );
     }
 
     protected function counters(PDO $pdo): array
     {
-        $rows = $pdo->query("
-            SELECT schemaname || '.' || sequencename AS name, last_value
-            FROM pg_sequences
-            ORDER BY 1
-        ")->fetchAll(PDO::FETCH_KEY_PAIR);
+        $rows = $pdo->query(
+            '
+                SELECT schemaname || \'.\' || sequencename AS name, last_value
+                FROM pg_sequences
+                ORDER BY 1
+            ',
+        )->fetchAll(PDO::FETCH_KEY_PAIR);
 
         $counters = [];
         foreach ($rows as $sequence => $value) {
@@ -90,10 +107,19 @@ final class ResetReloadStrategyPostgresIntegrationTest extends AbstractResetInte
 
     protected function rowCount(PDO $pdo): int
     {
-        return (int) $pdo->query('
-            SELECT (SELECT COUNT(*) FROM public.parents)
-                + (SELECT COUNT(*) FROM billing.children)
-                + (SELECT COUNT(*) FROM public.tags)
-        ')->fetchColumn();
+        return (int) $pdo->query(
+            '
+                SELECT (
+                    SELECT COUNT(*)
+                    FROM public.parents
+                ) + (
+                    SELECT COUNT(*)
+                    FROM billing.children
+                ) + (
+                    SELECT COUNT(*)
+                    FROM public.tags
+                )
+            ',
+        )->fetchColumn();
     }
 }

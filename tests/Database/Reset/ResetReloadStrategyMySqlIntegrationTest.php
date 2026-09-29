@@ -9,29 +9,64 @@ use PhpSoftBox\TestUtils\Database\Reset\MariaDbResetDriver;
 use PhpSoftBox\TestUtils\Database\ResetReloadStrategy;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\Test;
 
 /**
- * БД — сервис docker-compose, пользователь — root (нужны права на CREATE/DROP DATABASE); переопределение: TEST_UTILS_MARIADB_DSN.
+ * MySQL 8: `information_schema.TABLES.AUTO_INCREMENT` кешируется на `information_schema_stats_expiry` секунд, поэтому
+ * без отключения кеша в сессии reset не видит сдвиг счётчиков.
+ *
+ * БД — сервис docker-compose (профиль mysql), пользователь — root (нужны права на CREATE/DROP DATABASE);
+ * переопределение: TEST_UTILS_MYSQL_DSN.
  */
 #[CoversClass(ResetReloadStrategy::class)]
 #[CoversClass(MariaDbResetDriver::class)]
 #[CoversMethod(ResetReloadStrategy::class, 'reload')]
-final class ResetReloadStrategyMariaDbIntegrationTest extends AbstractResetIntegrationTestCase
+#[CoversMethod(MariaDbResetDriver::class, 'configureSession')]
+final class ResetReloadStrategyMySqlIntegrationTest extends AbstractResetIntegrationTestCase
 {
+    /**
+     * Проверим, что после сброса новая строка получает id из дампа: сдвиг счётчика виден, несмотря на кеш
+     * статистики information_schema в MySQL 8.
+     *
+     * @see ResetReloadStrategy::reload()
+     * @see MariaDbResetDriver::configureSession()
+     */
+    #[Test]
+    public function nextInsertIdStartsFromDumpCounterAfterReset(): void
+    {
+        $this->resetDatabase();
+
+        // Чтение счётчиков кеширует статистику таблиц на information_schema_stats_expiry.
+        $this->counters($this->pdo());
+
+        $this->insertRelatedRows($this->pdo());
+        $this->resetDatabase();
+
+        $pdo = $this->pdo();
+        $pdo->exec(
+            '
+                INSERT INTO parents ()
+                VALUES ()
+            ',
+        );
+
+        self::assertSame(1251, (int) $pdo->lastInsertId());
+    }
+
     protected function dsnEnvironmentVariable(): string
     {
-        return 'TEST_UTILS_MARIADB_DSN';
+        return 'TEST_UTILS_MYSQL_DSN';
     }
 
     protected function defaultDsn(): string
     {
-        return 'mariadb://root:root@mariadb:3306/psb_test_utils_reset';
+        return 'mysql://root:root@mysql:3306/psb_test_utils_reset';
     }
 
     protected function schemaDump(): string
     {
         return <<<'SQL'
-            -- MariaDB dump
+            -- MySQL dump
             CREATE TABLE `parents` (
               `id` int NOT NULL AUTO_INCREMENT,
               PRIMARY KEY (`id`)

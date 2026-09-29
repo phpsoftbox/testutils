@@ -118,6 +118,11 @@ final class TestDatabaseReloadHandlerTest extends TestCase
             {
                 return $this->io;
             }
+
+            public function environment(): string
+            {
+                return 'test';
+            }
         };
 
         $result = $handler->run($runner);

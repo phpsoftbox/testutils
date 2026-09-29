@@ -59,16 +59,16 @@ final class DatabaseTransactionManager implements TransactionAdapterInterface
             return $path !== '' && $path !== ':memory:';
         }
 
-        return $dsn->driver === 'postgres' || $dsn->driver === 'mariadb';
+        return $dsn->driver === 'postgres' || $dsn->driver === 'mariadb' || $dsn->driver === 'mysql';
     }
 
     private function buildCommand(Dsn $dsn, string $sql): Command
     {
         return match ($dsn->driver) {
-            'postgres' => $this->buildPostgresCommand($dsn, $sql),
-            'mariadb'  => $this->buildMariaDbCommand($dsn, $sql),
-            'sqlite'   => $this->buildSqliteCommand($dsn, $sql),
-            default    => throw new RuntimeException(sprintf('Unsupported driver "%s".', $dsn->driver)),
+            'postgres'         => $this->buildPostgresCommand($dsn, $sql),
+            'mariadb', 'mysql' => $this->buildMariaDbCommand($dsn, $sql),
+            'sqlite'           => $this->buildSqliteCommand($dsn, $sql),
+            default            => throw new RuntimeException(sprintf('Unsupported driver "%s".', $dsn->driver)),
         };
     }
 
