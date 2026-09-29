@@ -29,11 +29,15 @@ final class PostgresResetDriver extends AbstractResetDriver
 
     public function terminateForeignSessions(ResetConnectionInterface $connection, string $database): void
     {
-        $connection->fetchAll('
-            SELECT pg_terminate_backend(pid)
-            FROM pg_stat_activity
-            WHERE datname = ? AND pid <> pg_backend_pid()
-        ', [$database]);
+        $connection->fetchAll(
+            '
+                SELECT pg_terminate_backend(pid)
+                FROM pg_stat_activity
+                WHERE datname = ?
+                    AND pid <> pg_backend_pid()
+            ',
+            [$database],
+        );
     }
 
     public function serviceTable(): string
@@ -45,13 +49,16 @@ final class PostgresResetDriver extends AbstractResetDriver
     {
         $condition = self::USER_SCHEMAS_CONDITION;
 
-        $rows = $connection->fetchAll("
-            SELECT schemaname, tablename
-            FROM pg_tables
-            WHERE {$condition}
-                AND NOT (schemaname = ? AND tablename = ?)
-            ORDER BY schemaname, tablename
-        ", [self::SERVICE_SCHEMA, ResetReloadStrategy::SERVICE_TABLE]);
+        $rows = $connection->fetchAll(
+            "
+                SELECT schemaname, tablename
+                FROM pg_tables
+                WHERE {$condition}
+                    AND NOT (schemaname = ? AND tablename = ?)
+                ORDER BY schemaname, tablename
+            ",
+            [self::SERVICE_SCHEMA, ResetReloadStrategy::SERVICE_TABLE],
+        );
 
         $tables = [];
         foreach ($rows as $row) {
@@ -65,11 +72,13 @@ final class PostgresResetDriver extends AbstractResetDriver
     {
         $condition = self::USER_SCHEMAS_CONDITION;
 
-        $rows = $connection->fetchAll("
-            SELECT schemaname, sequencename, last_value
-            FROM pg_sequences
-            WHERE {$condition}
-        ");
+        $rows = $connection->fetchAll(
+            "
+                SELECT schemaname, sequencename, last_value
+                FROM pg_sequences
+                WHERE {$condition}
+            ",
+        );
 
         $counters = [];
         foreach ($rows as $row) {

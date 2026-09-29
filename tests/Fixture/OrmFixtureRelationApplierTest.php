@@ -23,7 +23,7 @@ final class OrmFixtureRelationApplierTest extends TestCase
     public function applyThrowsWhenOwnerClassDoesNotMatchDefinition(): void
     {
         $applier = new OrmFixtureRelationApplier(
-            $this->createMock(EntityManagerInterface::class),
+            $this->createStub(EntityManagerInterface::class),
         );
 
         $this->expectException(InvalidArgumentException::class);

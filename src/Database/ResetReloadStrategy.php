@@ -142,9 +142,13 @@ final class ResetReloadStrategy implements ReloadStrategyInterface
         );
 
         $driver->createServiceTable($db);
-        $db->execute("
-            INSERT INTO {$driver->serviceTable()} (hash, counters) VALUES (?, ?)
-        ", [$hash, json_encode($state->counters, JSON_THROW_ON_ERROR)]);
+        $db->execute(
+            "
+                INSERT INTO {$driver->serviceTable()} (hash, counters)
+                VALUES (?, ?)
+            ",
+            [$hash, json_encode($state->counters, JSON_THROW_ON_ERROR)],
+        );
 
         return $state;
     }
@@ -184,9 +188,12 @@ final class ResetReloadStrategy implements ReloadStrategyInterface
     private function isSchemaIntact(ResetState $state): bool
     {
         try {
-            $rows = $state->connection->fetchAll("
-                SELECT hash FROM {$state->driver->serviceTable()}
-            ");
+            $rows = $state->connection->fetchAll(
+                "
+                    SELECT hash
+                    FROM {$state->driver->serviceTable()}
+                ",
+            );
         } catch (Throwable) {
             return false;
         }
@@ -201,9 +208,12 @@ final class ResetReloadStrategy implements ReloadStrategyInterface
     {
         try {
             $db   = $this->connectionFactory->connect($connection);
-            $rows = $db->fetchAll("
-                SELECT hash, counters FROM {$driver->serviceTable()}
-            ");
+            $rows = $db->fetchAll(
+                "
+                    SELECT hash, counters
+                    FROM {$driver->serviceTable()}
+                ",
+            );
         } catch (Throwable) {
             // Базы или служебной таблицы нет.
             return null;
