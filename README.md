@@ -65,6 +65,8 @@ php psb test:parallel --processes=4
 
 ## Тесты пакета
 
-Интеграционные тесты режима `reset` работают с настоящими MariaDB и PostgreSQL из docker-compose фреймворка:
-`make select-testutils` поднимает `php-cli`, `mariadb` и `postgres`, затем `make php-test`. Если сервер недоступен,
-тесты падают (а не пропускаются). DSN можно переопределить через `TEST_UTILS_MARIADB_DSN` и `TEST_UTILS_POSTGRES_DSN`.
+Интеграционные тесты режима `reset` работают с настоящими MariaDB, MySQL и PostgreSQL из docker-compose фреймворка:
+`make select-testutils` поднимает `php-cli`, `mariadb` и `postgres`; MySQL — профиль `mysql`
+(`docker compose --profile mysql up -d mysql`), затем `make php-test`. Если сервер недоступен, тесты падают
+(а не пропускаются). DSN можно переопределить через `TEST_UTILS_MARIADB_DSN`, `TEST_UTILS_MYSQL_DSN` и
+`TEST_UTILS_POSTGRES_DSN`.

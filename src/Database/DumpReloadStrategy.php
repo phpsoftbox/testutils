@@ -142,7 +142,7 @@ final class DumpReloadStrategy implements ReloadStrategyInterface
             return;
         }
 
-        if ($driver === 'mariadb') {
+        if ($driver === 'mariadb' || $driver === 'mysql') {
             $this->terminateMariaDbConnections($connection->test);
             $command = $this->buildMariaDbDropCreate($connection->test);
             $this->runChecked($command);
@@ -172,7 +172,7 @@ final class DumpReloadStrategy implements ReloadStrategyInterface
             return;
         }
 
-        if ($driver === 'mariadb') {
+        if ($driver === 'mariadb' || $driver === 'mysql') {
             $command = $this->buildMariaDbDump($connection->main, $dumpFile);
             $this->runChecked($command);
 
@@ -200,7 +200,7 @@ final class DumpReloadStrategy implements ReloadStrategyInterface
             return;
         }
 
-        if ($driver === 'mariadb') {
+        if ($driver === 'mariadb' || $driver === 'mysql') {
             $command = $this->buildMariaDbLoad($connection->test, $dumpFile);
             $this->runChecked($command);
 

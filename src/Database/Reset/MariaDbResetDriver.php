@@ -11,7 +11,11 @@ use function is_numeric;
 use function sprintf;
 use function str_contains;
 use function str_replace;
+use function stripos;
 
+/**
+ * Сброс для MariaDB и MySQL: сервер определяется по `VERSION()`, а не по имени драйвера в DSN.
+ */
 final class MariaDbResetDriver extends AbstractResetDriver
 {
     public function configureSession(ResetConnectionInterface $connection): void
@@ -19,6 +23,14 @@ final class MariaDbResetDriver extends AbstractResetDriver
         $connection->execute('
             SET SESSION lock_wait_timeout = 5
         ');
+
+        // MySQL 8 кеширует information_schema.TABLES.AUTO_INCREMENT на information_schema_stats_expiry (86400 с):
+        // без отключения кеша сдвиг счётчика не виден и счётчик не возвращается. В MariaDB переменной нет.
+        if ($this->isMySql($connection)) {
+            $connection->execute('
+                SET SESSION information_schema_stats_expiry = 0
+            ');
+        }
     }
 
     public function terminateForeignSessions(ResetConnectionInterface $connection, string $database): void
@@ -128,6 +140,14 @@ final class MariaDbResetDriver extends AbstractResetDriver
                 SET FOREIGN_KEY_CHECKS = 1
             ');
         }
+    }
+
+    private function isMySql(ResetConnectionInterface $connection): bool
+    {
+        $rows    = $connection->fetchAll('SELECT VERSION() AS version');
+        $version = (string) ($rows[0]['version'] ?? '');
+
+        return $version !== '' && stripos($version, 'mariadb') === false;
     }
 
     private function quote(string $identifier): string
