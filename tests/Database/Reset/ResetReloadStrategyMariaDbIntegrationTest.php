@@ -53,35 +53,53 @@ final class ResetReloadStrategyMariaDbIntegrationTest extends AbstractResetInteg
 
     protected function insertRelatedRows(PDO $pdo): void
     {
-        $pdo->exec('
-            INSERT INTO parents () VALUES ()
-        ');
-        $pdo->exec('
-            INSERT INTO children (parent_id) VALUES (LAST_INSERT_ID())
-        ');
-        $pdo->exec("
-            INSERT INTO tags (code) VALUES ('a')
-        ");
+        $pdo->exec(
+            '
+                INSERT INTO parents ()
+                VALUES ()
+            ',
+        );
+        $pdo->exec(
+            '
+                INSERT INTO children (parent_id)
+                VALUES (LAST_INSERT_ID())
+            ',
+        );
+        $pdo->exec(
+            '
+                INSERT INTO tags (code)
+                VALUES (\'a\')
+            ',
+        );
     }
 
     protected function insertAndDeleteRow(PDO $pdo): void
     {
-        $pdo->exec('
-            INSERT INTO parents () VALUES ()
-        ');
-        $pdo->exec('
-            DELETE FROM parents
-        ');
+        $pdo->exec(
+            '
+                INSERT INTO parents ()
+                VALUES ()
+            ',
+        );
+        $pdo->exec(
+            '
+                DELETE FROM parents
+            ',
+        );
     }
 
     protected function counters(PDO $pdo): array
     {
-        $rows = $pdo->query("
-            SELECT TABLE_NAME, AUTO_INCREMENT
-            FROM information_schema.TABLES
-            WHERE TABLE_SCHEMA = DATABASE() AND AUTO_INCREMENT IS NOT NULL AND TABLE_NAME <> '_test_utils_reset'
-            ORDER BY TABLE_NAME
-        ")->fetchAll(PDO::FETCH_KEY_PAIR);
+        $rows = $pdo->query(
+            '
+                SELECT TABLE_NAME, AUTO_INCREMENT
+                FROM information_schema.TABLES
+                WHERE TABLE_SCHEMA = DATABASE()
+                    AND AUTO_INCREMENT IS NOT NULL
+                    AND TABLE_NAME <> \'_test_utils_reset\'
+                ORDER BY TABLE_NAME
+            ',
+        )->fetchAll(PDO::FETCH_KEY_PAIR);
 
         $counters = [];
         foreach ($rows as $table => $value) {
@@ -93,8 +111,19 @@ final class ResetReloadStrategyMariaDbIntegrationTest extends AbstractResetInteg
 
     protected function rowCount(PDO $pdo): int
     {
-        return (int) $pdo->query('
-            SELECT (SELECT COUNT(*) FROM parents) + (SELECT COUNT(*) FROM children) + (SELECT COUNT(*) FROM tags)
-        ')->fetchColumn();
+        return (int) $pdo->query(
+            '
+                SELECT (
+                    SELECT COUNT(*)
+                    FROM parents
+                ) + (
+                    SELECT COUNT(*)
+                    FROM children
+                ) + (
+                    SELECT COUNT(*)
+                    FROM tags
+                )
+            ',
+        )->fetchColumn();
     }
 }

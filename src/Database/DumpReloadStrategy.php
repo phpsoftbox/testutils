@@ -601,7 +601,7 @@ final class DumpReloadStrategy implements ReloadStrategyInterface
 
         $escapedDatabaseSql = str_replace("'", "''", $database);
         $listSql            = sprintf(
-            "SELECT ID FROM information_schema.processlist WHERE DB = '%s' AND ID <> CONNECTION_ID();",
+            'SELECT ID FROM information_schema.processlist WHERE DB = \'%s\' AND ID <> CONNECTION_ID();',
             $escapedDatabaseSql,
         );
 

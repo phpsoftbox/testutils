@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use PhpSoftBox\Http\Message\Redirector;
+use PhpSoftBox\Application\Response\Redirector;
 use PhpSoftBox\Router\UrlGeneratorInterface;
 use PhpSoftBox\Session\SessionInterface;
 use PhpSoftBox\TestUtils\Http\HttpClientConfiguratorInterface;

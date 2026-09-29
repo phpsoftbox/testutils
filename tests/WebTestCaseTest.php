@@ -16,6 +16,7 @@ use PhpSoftBox\Session\Session;
 use PhpSoftBox\Session\SessionInterface;
 use PhpSoftBox\Session\Store\ArraySessionStore;
 use PhpSoftBox\TestUtils\WebTestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -161,6 +162,8 @@ final class WebTestCaseTest extends WebTestCase
      * Проверяет, что методы authenticate/unauthenticate корректно устанавливают и очищают ключи авторизации в сессии.
      */
     #[Test]
+    // Общий мок EntityManager из setUp(): в этом тесте ожидания на нём не нужны.
+    #[AllowMockObjectsWithoutExpectations]
     public function authenticateAndUnauthenticateManageSessionKeys(): void
     {
         $this->authenticate(100, 'token-hash');
@@ -180,6 +183,8 @@ final class WebTestCaseTest extends WebTestCase
      * Проверяет, что actingAs выставляет session id и request attributes для последующих HTTP-запросов.
      */
     #[Test]
+    // Общий мок EntityManager из setUp(): в этом тесте ожидания на нём не нужны.
+    #[AllowMockObjectsWithoutExpectations]
     public function actingAsAuthenticatesUserForHttpClient(): void
     {
         $this->handler = new class () implements RequestHandlerInterface {
@@ -214,6 +219,8 @@ final class WebTestCaseTest extends WebTestCase
      * Проверяет, что withRole назначает роль через UserRoleManager из контейнера.
      */
     #[Test]
+    // Общий мок EntityManager из setUp(): в этом тесте ожидания на нём не нужны.
+    #[AllowMockObjectsWithoutExpectations]
     public function withRoleAssignsRoleThroughManager(): void
     {
         $this->withRole(42, 'admin');
