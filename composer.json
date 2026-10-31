@@ -24,7 +24,7 @@
         "phpsoftbox/auth": "^1.0",
         "phpsoftbox/cli-app": "^1.0",
         "phpsoftbox/cs-fixer": "^1.2.2",
-        "phpsoftbox/database": "^1.0",
+        "phpsoftbox/database": "^1.1",
         "phpsoftbox/orm": "^1.0",
         "phpsoftbox/session": "^1.0",
         "phpunit/phpunit": "^13.3"
