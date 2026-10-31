@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpSoftBox\TestUtils\Database;
 
 use PhpSoftBox\Database\Connection\ConnectionManagerInterface;
+use PhpSoftBox\Database\Connection\WarmupAwareConnectionManagerInterface;
 use PhpSoftBox\Database\Contracts\ConnectionInterface;
 
 use function explode;
@@ -12,7 +13,7 @@ use function method_exists;
 use function str_contains;
 use function trim;
 
-final class SingleConnectionManager implements ConnectionManagerInterface
+final class SingleConnectionManager implements ConnectionManagerInterface, WarmupAwareConnectionManagerInterface
 {
     public function __construct(
         private readonly ConnectionManagerInterface $inner,
@@ -43,6 +44,17 @@ final class SingleConnectionManager implements ConnectionManagerInterface
         }
 
         return $this->inner->write($normalized);
+    }
+
+    /**
+     * Сброс кеша прогрева проксируется во внутренний менеджер: сброс сервисов между
+     * задачами вызывает его у ConnectionManagerInterface.
+     */
+    public function clearWarmup(): void
+    {
+        if ($this->inner instanceof WarmupAwareConnectionManagerInterface) {
+            $this->inner->clearWarmup();
+        }
     }
 
     private function normalize(string $name): string
